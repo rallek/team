@@ -1,0 +1,6 @@
+services:
+    # Entity factory class
+    rk_team_module.entity_factory:
+        class: RK\TeamModule\Entity\Factory\TeamFactory
+        arguments:
+            - "@doctrine.orm.default_entity_manager"

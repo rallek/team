@@ -1,0 +1,103 @@
+{# Purpose of this template: Display a popup selector of persons for scribite integration #}
+{% set useFinder = true %}
+{% extends 'RKTeamModule::raw.html.twig' %}
+{% block title __('Search and select person') %}
+{% block content %}
+    <div class="container">
+        <ul class="nav nav-tabs">
+        <li{{ objectType == 'person' ? ' class="active"' : '' }}><a href="{{ path('rkteammodule_external_finder', {'objectType': 'person', 'editor': editorName}) }}" title="{{ __('Search and select person') }}">{{ __('Persons') }}</a></li>
+        </ul>
+        {% form_theme finderForm with [
+            '@RKTeamModule/Form/bootstrap_3.html.twig',
+            'ZikulaFormExtensionBundle:Form:form_div_layout.html.twig'
+        ] %}
+        {{ form_start(finderForm, {attr: { id: 'rKTeamModuleSelectorForm' }}) }}
+        {{ form_errors(finderForm) }}
+        <fieldset>
+            <legend>{{ __('Search and select person') }}</legend>
+            {{ form_row(finderForm.onlyImages) }}
+            <div id="imageFieldRow">
+                {{ form_row(finderForm.imageField) }}
+            </div>
+            {{ form_row(finderForm.pasteAs) }}
+            <br />
+            <div class="form-group">
+                <label class="col-sm-3 control-label">{{ __('Person') }}:</label>
+                <div class="col-sm-9">
+                    <div id="rkteammoduleItemContainer">
+                        {% if not onlyImages %}
+                            <ul>
+                        {% endif %}
+                            {% for person in items %}
+                                {% if not onlyImages or (attribute(person, imageField) is not empty and attribute(person, imageField ~ 'Meta').isImage) %}
+                                {% if not onlyImages %}
+                                    <li>
+                                {% endif %}
+                                    {% set itemId = person.createCompositeIdentifier() %}
+                                    <a href="#" data-itemid="{{ itemId }}">
+                                        {% if onlyImages %}
+                                            {% set thumbOptions = attribute(thumbRuntimeOptions, 'person' ~ imageField[:1]|upper ~ imageField[1:]) %}
+                                            <img src="{{ attribute(person, imageField).getPathname()|imagine_filter('zkroot', thumbOptions) }}" alt="{{ person.getTitleFromDisplayPattern()|e('html_attr') }}" width="{{ thumbOptions.thumbnail.size[0] }}" height="{{ thumbOptions.thumbnail.size[1] }}" class="img-rounded" />
+                                        {% else %}
+                                            {{ person.getTitleFromDisplayPattern() }}
+                                        {% endif %}
+                                    </a>
+                                    <input type="hidden" id="path{{ itemId }}" value="{{ path('rkteammodule_person_display', { 'id': person.id }) }}" />
+                                    <input type="hidden" id="url{{ itemId }}" value="{{ url('rkteammodule_person_display', { 'id': person.id }) }}" />
+                                    <input type="hidden" id="title{{ itemId }}" value="{{ person.getTitleFromDisplayPattern()|e('html_attr') }}" />
+                                    <input type="hidden" id="desc{{ itemId }}" value="{% set description %}{% if person.teamMemberDescription is not empty %}{{ person.teamMemberDescription }}{% endif %}
+                                    {% endset %}{{ description|striptags|e('html_attr') }}" />
+                                    {% if onlyImages %}
+                                        <input type="hidden" id="imagePath{{ itemId }}" value="/{{ attribute(person, imageField).getPathname() }}" />
+                                    {% endif %}
+                                {% if not onlyImages %}
+                                    </li>
+                                {% endif %}
+                                {% endif %}
+                            {% else %}
+                                {% if not onlyImages %}<li>{% endif %}{{ __('No persons found.') }}{% if not onlyImages %}</li>{% endif %}
+                            {% endfor %}
+                        {% if not onlyImages %}
+                            </ul>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            {{ form_row(finderForm.sort) }}
+            {{ form_row(finderForm.sortdir) }}
+            {{ form_row(finderForm.num) }}
+            <div id="searchTermRow">
+                {{ form_row(finderForm.q) }}
+            </div>
+            <div>
+                {{ pager({ display: 'page', rowcount: pager.numitems, limit: pager.itemsperpage, posvar: 'pos', maxpages: 10, route: 'rkteammodule_external_finder'}) }}
+            </div>
+            <div class="form-group">
+                <div class="col-sm-offset-3 col-sm-9">
+                    {{ form_widget(finderForm.update) }}
+                    {{ form_widget(finderForm.cancel) }}
+                </div>
+            </div>
+        </fieldset>
+        {{ form_end(finderForm) }}
+    </div>
+
+    {#
+    <div class="rkteammodule-finderform">
+        <fieldset>
+            {{ render(controller('RKTeamModule:Person:edit')) }}
+        </fieldset>
+    </div>
+    #}
+
+    <script type="text/javascript">
+    /* <![CDATA[ */
+        ( function($) {
+            $(document).ready(function() {
+                rKTeamModule.finder.onLoad();
+            });
+        })(jQuery);
+    /* ]]> */
+    </script>
+{% endblock %}

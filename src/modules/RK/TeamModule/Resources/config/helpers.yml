@@ -1,0 +1,80 @@
+services:
+    # Helper classes
+    rk_team_module.controller_helper:
+        class: RK\TeamModule\Helper\ControllerHelper
+        arguments:
+            - "@translator.default"
+            - "@request_stack"
+            - "@session"
+            - "@logger"
+            - "@form.factory"
+            - "@zikula_extensions_module.api.variable"
+            - "@rk_team_module.entity_factory"
+            - "@rk_team_module.model_helper"
+            - "@rk_team_module.selection_helper"
+            - "@rk_team_module.image_helper"
+    
+    rk_team_module.hook_helper:
+        class: RK\TeamModule\Helper\HookHelper
+        arguments:
+            - "@hook_dispatcher"
+    
+    rk_team_module.image_helper:
+        class: RK\TeamModule\Helper\ImageHelper
+        arguments:
+            - "@translator.default"
+            - "@session"
+            - "@zikula_extensions_module.api.variable"
+    
+    rk_team_module.listentries_helper:
+        class: RK\TeamModule\Helper\ListEntriesHelper
+        arguments:
+            - "@translator.default"
+    
+    rk_team_module.model_helper:
+        class: RK\TeamModule\Helper\ModelHelper
+        arguments:
+            - "@rk_team_module.entity_factory"
+    
+    rk_team_module.search_helper:
+        class: RK\TeamModule\Helper\SearchHelper
+        arguments:
+            - "@zikula_permissions_module.api.permission"
+            - "@templating.engine.twig"
+            - "@session"
+            - "@request_stack"
+            - "@rk_team_module.entity_factory"
+            - "@rk_team_module.controller_helper"
+        tags:
+            - { name: zikula.searchable_module, bundleName: RKTeamModule }
+    
+    rk_team_module.selection_helper:
+        class: RK\TeamModule\Helper\SelectionHelper
+        arguments:
+            - "@translator.default"
+            - "@rk_team_module.entity_factory"
+    
+    rk_team_module.upload_helper:
+        class: RK\TeamModule\Helper\UploadHelper
+        arguments:
+            - "@translator.default"
+            - "@session"
+            - "@logger"
+            - "@zikula_users_module.current_user"
+            - "@zikula_extensions_module.api.variable"
+            - "%datadir%"
+    
+    rk_team_module.view_helper:
+        class: RK\TeamModule\Helper\ViewHelper
+        arguments:
+            - "@templating"
+            - "@request_stack"
+            - "@zikula_permissions_module.api.permission"
+            - "@zikula_extensions_module.api.variable"
+            - "@rk_team_module.controller_helper"
+    
+    rk_team_module.workflow_helper:
+        class: RK\TeamModule\Helper\WorkflowHelper
+        arguments:
+            - "@translator.default"
+            - "@rk_team_module.listentries_helper"

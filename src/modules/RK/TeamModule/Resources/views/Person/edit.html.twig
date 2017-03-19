@@ -1,0 +1,106 @@
+{# purpose of this template: build the form to edit an instance of person #}
+{% set baseTemplate = app.request.query.getBoolean('raw', false) ? 'raw' : (routeArea == 'admin' ? 'adminBase' : 'base') %}
+{% extends 'RKTeamModule::' ~ baseTemplate ~ '.html.twig' %}
+
+{% block header %}
+    {{ parent() }}
+    {{ pageAddAsset('javascript', zasset('@RKTeamModule:js/RKTeamModule.Validation.js', 98)) }}
+    {{ pageAddAsset('javascript', zasset('@RKTeamModule:js/RKTeamModule.EditFunctions.js', 99)) }}
+    {{ pageAddAsset('javascript', asset('typeahead/typeahead.bundle.min.js')) }}
+{% endblock %}
+
+{% block title mode == 'create' ? __('Create person') : __('Edit person') %}
+{% block admin_page_icon mode == 'create' ? 'plus' : 'pencil-square-o' %}
+{% block content %}
+    <div class="rkteammodule-person rkteammodule-edit">
+{% form_theme form with [
+    '@RKTeamModule/Form/bootstrap_3.html.twig',
+    'ZikulaFormExtensionBundle:Form:form_div_layout.html.twig'
+] %}
+{{ form_start(form, {attr: {id: 'personEditForm', class: 'rkteam-edit-form'}}) }}
+{{ form_errors(form) }}
+<fieldset>
+    <legend>{{ __('Content') }}</legend>
+    {{ form_row(form.lastName) }}
+    {{ form_row(form.firstName) }}
+    {{ form_row(form.teamMemberImage) }}
+    {{ form_row(form.teamMemberFunction) }}
+    {{ form_row(form.teamMemberDescription) }}
+    {{ form_row(form.phoneNumber) }}
+    {{ form_row(form.mobileNumber) }}
+    {{ form_row(form.personEmailAddress) }}
+    {{ form_row(form.personAddress) }}
+    {{ form_row(form.registeredUser) }}
+    {{ form_row(form.filter) }}
+</fieldset>
+
+{% if mode != 'create' %}
+    {{ include('@RKTeamModule/Helper/includeStandardFieldsEdit.html.twig', { obj: person }) }}
+{% endif %}
+
+{# include display hooks #}
+{% set hookId = mode != 'create' ? person.id : null %}
+{% set hooks = notifyDisplayHooks(eventName='rkteammodule.ui_hooks.persons.form_edit', id=hookId) %}
+{% if hooks is iterable and hooks|length > 0 %}
+    {% for providerArea, hook in hooks if providerArea != 'provider.scribite.ui_hooks.editor' %}
+        <fieldset>
+            {{ hook }}
+        </fieldset>
+    {% endfor %}
+{% endif %}
+
+{% if form.moderationSpecificCreator is defined %}
+    <fieldset id="moderationFieldsSection">
+        <legend>{{ __('Moderation') }} <i class="fa fa-expand"></i></legend>
+        <div id="moderationFieldsContent">
+            {{ form_row(form.moderationSpecificCreator) }}
+            {{ form_row(form.moderationSpecificCreationDate) }}
+        </div>
+    </fieldset>
+{% endif %}
+
+{# include return control #}
+{% if mode == 'create' %}
+    <fieldset>
+        <legend>{{ __('Return control') }}</legend>
+        {{ form_row(form.repeatCreation) }}
+    </fieldset>
+{% endif %}
+
+{# include possible submit actions #}
+<div class="form-group form-buttons">
+    <div class="col-sm-offset-3 col-sm-9">
+        {% for action in actions %}
+            {{ form_widget(attribute(form, action.id)) }}
+        {% endfor %}
+        {{ form_widget(form.reset) }}
+        {{ form_widget(form.cancel) }}
+    </div>
+</div>
+{{ form_end(form) }}
+</div>
+{% endblock %}
+{% block footer %}
+    {{ parent() }}
+
+    {% set editImage = '<span class="fa fa-pencil-square-o"></span>' %}
+    {% set deleteImage = '<span class="fa fa-trash-o"></span>' %}
+    
+    <script type="text/javascript">
+    /* <![CDATA[ */
+        
+        
+        ( function($) {
+            $(document).ready(function() {
+                // initialise auto completion for user fields
+                rKTeamInitUserField('rkteammodule_person_registeredUser', 'getPersonRegisteredUserUsers');
+                {% if form.moderationSpecificCreator is defined %}
+                    rKTeamInitUserField('rkteammodule_person_moderationSpecificCreator', 'getCommonUsersList');
+                {% endif %}
+                rKTeamInitEditForm('{{ mode }}', '{% if mode != 'create' %}{{ person.id }}{% endif %}');
+                rKTeamInitUploadField('rkteammodule_person_teamMemberImage_teamMemberImage');
+            });
+        })(jQuery);
+    /* ]]> */
+    </script>
+{% endblock %}
